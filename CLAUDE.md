@@ -29,7 +29,7 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 ## Key decisions / rules
 - `overflow-x: clip`, never `hidden`. Scroll reveals come from scroll position, not IntersectionObserver.
 - One clock drives all motion. The camera follows a scroll cue list and frames by size, not distance.
-- Bakery case-study name must be confirmed with Jay before publishing. Unfinished copy is `[PLACEHOLDER]`.
+- Case study: The Cake and Candle Co. (bespoke baking, Hatfield). Name confirmed by Jay 2026-11-11. Unfinished copy is `[PLACEHOLDER]`.
 
 ## Stages
 1. Scaffold ✅ 2. Static sections + brand 3. Ribbon + camera cues 4. Post/finish 5. Orb + form 6. Performance pass
