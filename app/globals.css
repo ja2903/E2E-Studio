@@ -59,3 +59,48 @@ button,
   outline: 2px solid var(--electric);
   outline-offset: 3px;
 }
+
+/* Shared components */
+@layer components {
+  .btn-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 1.75rem;
+    border-radius: 999px;
+    background: var(--electric);
+    color: var(--midnight); /* never white on blue */
+    font-family: var(--font-jakarta), system-ui, sans-serif;
+    font-weight: 600;
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
+  .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 30px -12px var(--electric);
+  }
+  .link-quiet {
+    font-family: var(--font-jakarta), system-ui, sans-serif;
+    font-weight: 600;
+    color: var(--cloud);
+    text-underline-offset: 6px;
+  }
+  .link-quiet:hover {
+    text-decoration: underline;
+    text-decoration-color: var(--cantaloupe);
+  }
+  .card {
+    border: 1px solid rgb(245 247 248 / 0.1);
+    border-radius: var(--radius);
+    background: rgb(245 247 248 / 0.03);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}

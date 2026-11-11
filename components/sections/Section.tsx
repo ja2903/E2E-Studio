@@ -2,21 +2,29 @@ import type { ReactNode } from "react";
 
 type Props = {
   id: string;
+  eyebrow?: string;
   title: string;
+  intro?: string;
   children?: ReactNode;
 };
 
 /** Shared wrapper so every section has the same gutter, width and spacing. */
-export default function Section({ id, title, children }: Props) {
+export default function Section({ id, eyebrow, title, intro, children }: Props) {
   return (
     <section
       id={id}
       aria-labelledby={`${id}-title`}
-      className="mx-auto min-h-[80vh] max-w-[var(--content-max)] px-[var(--space-gutter)] py-[var(--space-section)]"
+      className="mx-auto max-w-[var(--content-max)] scroll-mt-8 px-[var(--space-gutter)] py-[var(--space-section)]"
     >
-      <h2 id={`${id}-title`} className="text-3xl font-semibold sm:text-4xl">
+      {eyebrow && (
+        <p className="font-heading text-xs font-semibold uppercase tracking-[0.3em] text-electric">
+          {eyebrow}
+        </p>
+      )}
+      <h2 id={`${id}-title`} className="mt-3 max-w-2xl text-3xl font-semibold leading-tight sm:text-5xl">
         {title}
       </h2>
+      {intro && <p className="mt-4 max-w-xl text-lg text-cloud-muted">{intro}</p>}
       {children}
     </section>
   );
