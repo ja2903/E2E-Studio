@@ -15,10 +15,10 @@ function BrandVisual() {
           <circle cx="86" cy="14" r="9" fill="#0297DE" />
         </svg>
       </div>
-      <div className="grid gap-3">
-        <div className="grid grid-cols-2 gap-2">
+      <div className="grid min-h-0 grid-rows-[1fr_auto] gap-3">
+        <div className="grid min-h-0 grid-cols-2 grid-rows-2 gap-2">
           {swatches.map((s, i) => (
-            <span key={s} className={`build aspect-square rounded-lg ${s}`} style={{ "--n": i + 1 } as React.CSSProperties} />
+            <span key={s} className={`build min-h-0 rounded-lg ${s}`} style={{ "--n": i + 1 } as React.CSSProperties} />
           ))}
         </div>
         <div className="build rounded-lg border border-white/10 bg-midnight/70 px-3 py-2" style={{ "--n": 5 } as React.CSSProperties}>
