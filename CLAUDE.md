@@ -28,10 +28,15 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 - Copy lives in `lib/content.ts`. Case study images: `public/work/` (site screenshots taken from the live artifact).
 - Env: `CONTACT_EMAIL`, `NEXT_PUBLIC_SITE_URL` (see `.env.example`).
 
+## 3D engine (components/three)
+- `path.ts`: the ribbon's route (flow mark, then 4 stops, then the orb). `ribbon.ts`: shader ribbon + glow texture. `engine.ts`: clock, camera cues, particles, nodes, HTML reveals.
+- Cues are measured from the page: hero → `.static-mark` box, steps → `[data-stop]`, end → `[data-orb]`. Change layout freely; cues re-measure on resize.
+- Engine adds `has-3d` to `<html>` when running. Reduced motion or no WebGL: no engine, static mark stays, all text visible.
+
 ## Key decisions / rules
 - `overflow-x: clip`, never `hidden`. Scroll reveals come from scroll position, not IntersectionObserver.
 - One clock drives all motion. The camera follows a scroll cue list and frames by size, not distance.
 - Case study: The Cake and Candle Co. (bespoke baking, Hatfield). Name confirmed by Jay 2026-11-11. Unfinished copy is `[PLACEHOLDER]`.
 
 ## Stages
-1. Scaffold ✅ 2. Static sections + brand ✅ 3. Ribbon + camera cues 4. Post/finish 5. Orb + form 6. Performance pass
+1. Scaffold ✅ 2. Static sections + brand ✅ 3. Ribbon + camera cues ✅ 4. Post/finish 5. Orb + form 6. Performance pass

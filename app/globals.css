@@ -96,6 +96,23 @@ button,
   }
 }
 
+/* 3D scene (components/three). The canvas fades in once the engine is ready. */
+.scene-canvas {
+  opacity: 0;
+  transition: opacity 1.2s ease;
+}
+.has-3d .scene-canvas {
+  opacity: 1;
+}
+.has-3d .static-mark {
+  visibility: hidden; /* keeps its box: the ribbon is framed to it */
+}
+/* Step reveals: --reveal (0..1) is set every frame from scroll position. */
+.has-3d [data-stop] {
+  opacity: var(--reveal, 1);
+  transform: translateY(calc((1 - var(--reveal, 1)) * 1.5rem));
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

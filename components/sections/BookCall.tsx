@@ -15,8 +15,9 @@ export default function BookCall() {
       intro="A relaxed chat about where you are and what would help. No pressure, no jargon."
     >
       <div className="mt-12 grid gap-12 md:grid-cols-[1fr_1.3fr]">
-        {/* Space for the Warp orb (Stage 5) */}
+        {/* Space for the Warp orb (Stage 5). The 3D ribbon ends here (data-orb). */}
         <div
+          data-orb
           aria-hidden="true"
           className="mx-auto aspect-square w-full max-w-xs rounded-full bg-[radial-gradient(circle_at_35%_35%,var(--electric),var(--midnight)_70%)] opacity-80"
         />

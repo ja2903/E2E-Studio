@@ -18,7 +18,7 @@ await send("Runtime.enable"); await send("Page.enable");
 await send("Emulation.setDeviceMetricsOverride", { width: +w, height: +h, deviceScaleFactor: 1, mobile: mobile === "1" });
 await send("Page.navigate", { url }); await sleep(3500);
 for (const y of ys.split(",")) {
-  await send("Runtime.evaluate", { expression: `window.scrollTo(0, ${y} * document.documentElement.scrollHeight)` }); await sleep(700);
+  await send("Runtime.evaluate", { expression: `window.scrollTo(0, ${y} * document.documentElement.scrollHeight)` }); await sleep(+(process.env.SHOOT_WAIT || 700));
   const { data } = await send("Page.captureScreenshot", { format: "png" });
   writeFileSync(`${out}-${y}.png`, Buffer.from(data, "base64"));
 }

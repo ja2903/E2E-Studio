@@ -31,13 +31,13 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Static stand-in for the 3D ribbon (Stage 3). Also the reduced-motion fallback. */}
+      {/* Reduced-motion / no-WebGL fallback. With 3D on it is hidden, and the ribbon is framed to this box. */}
       <Image
         src="/brand/flow-mark.svg"
         alt=""
         width={100}
         height={100}
-        className="mx-auto hidden w-full max-w-sm md:block"
+        className="static-mark mx-auto hidden w-full max-w-sm md:block"
       />
     </header>
   );
