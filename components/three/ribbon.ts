@@ -67,6 +67,9 @@ export function createRibbon(points: THREE.Vector3[]) {
     uDim: { value: 1 },
     uColorA: { value: CANTALOUPE },
     uColorB: { value: ELECTRIC },
+    uPointer: { value: new THREE.Vector3(0, 0, 0) },
+    uPointerStrength: { value: 0 },
+    uPointerRadius: { value: 2 },
   };
 
   const make = (width: number, strength: number, core: number) =>
@@ -79,6 +82,9 @@ export function createRibbon(points: THREE.Vector3[]) {
         attribute float aAcross;
         uniform float uTime;
         uniform float uWidth;
+        uniform vec3 uPointer;
+        uniform float uPointerStrength;
+        uniform float uPointerRadius;
         varying float vAlong;
         varying float vAcross;
         varying float vFacing;
@@ -87,7 +93,10 @@ export function createRibbon(points: THREE.Vector3[]) {
           float twist = aAlong * 34.0 + uTime * 0.35;     // slow, continuous twist
           vec3 side = aSideA * cos(twist) + aSideB * sin(twist);
           float taper = smoothstep(0.0, 0.012, aAlong) * (1.0 - smoothstep(0.985, 1.0, aAlong));
-          vec3 pos = position + sway(aAlong, uTime) + side * aAcross * uWidth * (0.35 + 0.65 * taper);
+          vec3 centre = position + sway(aAlong, uTime);
+          vec3 toP = uPointer - centre;               // lean toward the pointer (matches bend() in engine.ts)
+          centre += toP * exp(-dot(toP, toP) / (uPointerRadius * uPointerRadius)) * uPointerStrength;
+          vec3 pos = centre + side * aAcross * uWidth * (0.35 + 0.65 * taper);
           vec4 mv = modelViewMatrix * vec4(pos, 1.0);
           // How face-on the ribbon is: edges turned toward us read brighter.
           vec3 normal = normalize(normalMatrix * (aSideA * -sin(twist) + aSideB * cos(twist)));

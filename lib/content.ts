@@ -4,22 +4,22 @@ export const stops = [
   {
     id: "brand",
     name: "Brand",
-    line: "A name, logo and colours that look like you, ready for signs, socials and print.",
+    line: "A logo and colours that look like you.",
   },
   {
     id: "website",
     name: "Website",
-    line: "A clear, quick site that works on every phone and tells people why to choose you.",
+    line: "A quick, clear site that works on every phone.",
   },
   {
     id: "bookings",
     name: "Bookings",
-    line: "Customers book or order online, so you spend less time chasing messages.",
+    line: "Customers book or order online, any time.",
   },
   {
     id: "care",
     name: "Care",
-    line: "We keep everything running and up to date, so you can get on with the work.",
+    line: "We keep it all running, so you don't have to.",
   },
 ] as const;
 

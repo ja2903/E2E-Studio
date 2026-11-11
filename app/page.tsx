@@ -1,4 +1,5 @@
 import SceneCanvas from "@/components/three/SceneCanvas";
+import Nav from "@/components/sections/Nav";
 import Hero from "@/components/sections/Hero";
 import HowItWorks from "@/components/sections/HowItWorks";
 import Packages from "@/components/sections/Packages";
@@ -11,6 +12,7 @@ export default function Home() {
     // overflow-x: clip, never hidden (guide lesson 01)
     <main className="relative overflow-x-clip">
       <SceneCanvas />
+      <Nav />
       <div className="relative z-10">
         <Hero />
         <HowItWorks />

@@ -7,15 +7,15 @@ const posts = [
   { src: "/work/cake-candle-insta-3.jpg", alt: "Instagram post announcing the new name, The Cake and Candle Co." },
 ];
 
-function BrowserFrame({ src, alt }: { src: string; alt: string }) {
+function BrowserFrame({ src, alt, className = "" }: { src: string; alt: string; className?: string }) {
   return (
-    <figure className="card overflow-hidden">
-      <div aria-hidden="true" className="flex gap-1.5 border-b border-white/10 px-4 py-3">
-        <span className="size-2.5 rounded-full bg-white/20" />
-        <span className="size-2.5 rounded-full bg-white/20" />
-        <span className="size-2.5 rounded-full bg-white/20" />
+    <figure className={`overflow-hidden rounded-xl border border-white/15 bg-midnight shadow-2xl ${className}`}>
+      <div aria-hidden="true" className="flex gap-1.5 border-b border-white/10 px-3 py-2">
+        <span className="size-2 rounded-full bg-white/20" />
+        <span className="size-2 rounded-full bg-white/20" />
+        <span className="size-2 rounded-full bg-white/20" />
       </div>
-      <Image src={src} alt={alt} width={1440} height={900} className="h-auto w-full" />
+      <Image src={src} alt={alt} width={1440} height={900} sizes="(min-width: 768px) 40vw, 90vw" className="h-auto w-full" />
     </figure>
   );
 }
@@ -26,55 +26,44 @@ export default function ExampleWork() {
       id="work"
       eyebrow="Example work"
       title="The Cake and Candle Co."
-      intro="Eggless bakes and hand-decorated candles, made to order in Hatfield. Two small businesses became one brand, with a website and Instagram to match."
+      intro="Two small Hatfield businesses became one brand, with a website and Instagram to match."
     >
-      <div className="mt-12 grid items-center gap-10 md:grid-cols-[1fr_1.4fr]">
-        <div className="card grid place-items-center p-10">
-          <Image
-            src="/work/cake-candle-logo.svg"
-            alt="The Cake and Candle Co. logo"
-            width={632}
-            height={478}
-            className="h-auto w-full max-w-xs"
+      <div className="mt-10 grid items-center gap-8 md:grid-cols-[1fr_1.5fr] md:gap-12">
+        <div className="grid gap-5">
+          <div className="card grid place-items-center p-6">
+            <Image
+              src="/work/cake-candle-logo.svg"
+              alt="The Cake and Candle Co. logo"
+              width={632}
+              height={478}
+              className="h-auto w-full max-w-[13rem]"
+            />
+          </div>
+          <ul className="flex flex-wrap gap-2 text-sm" aria-label="What we made">
+            {["Brand", "Website", "Instagram"].map((t) => (
+              <li key={t} className="rounded-full border border-electric/50 px-3 py-1 font-heading font-semibold text-electric">
+                {t}
+              </li>
+            ))}
+          </ul>
+          <ul className="grid grid-cols-3 gap-2">
+            {posts.map((p) => (
+              <li key={p.src} className="overflow-hidden rounded-lg border border-white/10">
+                <Image src={p.src} alt={p.alt} width={1080} height={1350} sizes="(min-width: 768px) 12vw, 30vw" className="h-auto w-full" />
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Two pages of the site, stacked for depth */}
+        <div className="relative pb-[12%] pr-[8%]">
+          <BrowserFrame src="/work/cake-candle-site-home.png" alt="The Cake and Candle Co. website home page" />
+          <BrowserFrame
+            src="/work/cake-candle-site-order.png"
+            alt="The Cake and Candle Co. website order page"
+            className="absolute bottom-0 right-0 w-[55%] ring-1 ring-electric/40"
           />
         </div>
-        <div>
-          <h3 className="text-2xl font-semibold">Brand</h3>
-          <p className="mt-2 text-cloud-muted">
-            A new name and logo bringing a bakery and a candle business together under one roof,
-            with a warm, celebratory look that suits both.
-          </p>
-        </div>
-      </div>
-
-      <div className="mt-16 grid gap-6">
-        <div>
-          <h3 className="text-2xl font-semibold">Website</h3>
-          <p className="mt-2 max-w-xl text-cloud-muted">
-            Customers browse cakes, candles and hampers, then send everything as one order
-            request. The owner checks her diary and confirms before anything is paid.
-          </p>
-        </div>
-        <div className="grid gap-5 md:grid-cols-2">
-          <BrowserFrame src="/work/cake-candle-site-home.png" alt="The Cake and Candle Co. website home page" />
-          <BrowserFrame src="/work/cake-candle-site-order.png" alt="The Cake and Candle Co. website order page" />
-        </div>
-      </div>
-
-      <div className="mt-16 grid gap-6">
-        <div>
-          <h3 className="text-2xl font-semibold">Instagram</h3>
-          <p className="mt-2 max-w-xl text-cloud-muted">
-            A launch set of pinned posts that explain the menu, how to order and the new name.
-          </p>
-        </div>
-        <ul className="grid grid-cols-3 gap-3 sm:gap-5">
-          {posts.map((p) => (
-            <li key={p.src} className="card overflow-hidden">
-              <Image src={p.src} alt={p.alt} width={1080} height={1350} className="h-auto w-full" />
-            </li>
-          ))}
-        </ul>
       </div>
     </Section>
   );

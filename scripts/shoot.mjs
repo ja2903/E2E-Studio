@@ -17,6 +17,7 @@ const send = (method, params = {}) => new Promise((r) => { const i = ++id; pendi
 await send("Runtime.enable"); await send("Page.enable");
 await send("Emulation.setDeviceMetricsOverride", { width: +w, height: +h, deviceScaleFactor: 1, mobile: mobile === "1" });
 await send("Page.navigate", { url }); await sleep(3500);
+if (process.env.SHOOT_EVAL) await send("Runtime.evaluate", { expression: process.env.SHOOT_EVAL });
 for (const y of ys.split(",")) {
   await send("Runtime.evaluate", { expression: `window.scrollTo(0, ${y} * document.documentElement.scrollHeight)` }); await sleep(+(process.env.SHOOT_WAIT || 700));
   const { data } = await send("Page.captureScreenshot", { format: "png" });

@@ -29,9 +29,12 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 - Env: `CONTACT_EMAIL`, `NEXT_PUBLIC_SITE_URL` (see `.env.example`).
 
 ## 3D engine (components/three)
-- `path.ts`: the ribbon's route (flow mark, then 4 stops, then the orb). `ribbon.ts`: shader ribbon + glow texture. `engine.ts`: clock, camera cues, particles, nodes, HTML reveals.
+- `path.ts`: the ribbon's route (flow mark, then 4 stops, then the orb). `ribbon.ts`: shader ribbon + glow texture. `engine.ts`: clock, camera cues, particles, dust, nodes, cursor bend/parallax (sets `--px/--py` on `<html>`), HTML reveals. `post.ts`: bloom → ACES → grain, then adds the midnight base (clearing to midnight inside the HDR chain came out teal).
 - Cues are measured from the page: hero → `.static-mark` box, steps → `[data-stop]`, end → `[data-orb]`. Change layout freely; cues re-measure on resize.
 - Engine adds `has-3d` to `<html>` when running. Reduced motion or no WebGL: no engine, static mark stays, all text visible.
+
+- Hero: `components/brand/AnimatedLogo.tsx` (CSS-animated logo, `.logo-anim` in globals.css), floating step cards, word-by-word headline. Pricing tilt: `components/ui/TiltCard.tsx`.
+- All CSS motion uses the finished look as the base style, so reduced motion shows everything static.
 
 ## Key decisions / rules
 - `overflow-x: clip`, never `hidden`. Scroll reveals come from scroll position, not IntersectionObserver.

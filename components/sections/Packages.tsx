@@ -1,5 +1,6 @@
 import Section from "./Section";
 import { packages } from "@/lib/content";
+import TiltCard from "@/components/ui/TiltCard";
 
 export default function Packages() {
   return (
@@ -11,10 +12,8 @@ export default function Packages() {
     >
       <ul className="mt-12 grid gap-5 md:grid-cols-3">
         {packages.map((p) => (
-          <li
-            key={p.name}
-            className={`card flex flex-col p-7 ${p.featured ? "border-electric" : ""}`}
-          >
+          <li key={p.name} className="tilt-wrap">
+            <TiltCard className={`card flex h-full flex-col p-7 ${p.featured ? "border-electric" : ""}`}>
             <h3 className="text-xl font-semibold">{p.name}</h3>
             <p className="mt-4 font-heading">
               <span className="text-sm text-cloud-muted">from </span>
@@ -30,6 +29,7 @@ export default function Packages() {
                 </li>
               ))}
             </ul>
+            </TiltCard>
           </li>
         ))}
       </ul>

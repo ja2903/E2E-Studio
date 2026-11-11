@@ -11,6 +11,7 @@ import {
   END_POINT,
 } from "./path";
 import { createRibbon, glowTexture, CANTALOUPE, ELECTRIC } from "./ribbon";
+import { createPost } from "./post";
 
 /**
  * The 3D engine. One clock (THREE.Timer) drives everything: the ribbon, the
@@ -38,13 +39,38 @@ export function createEngine(canvas: HTMLCanvasElement) {
   const isPhone = window.matchMedia("(pointer: coarse)").matches && window.innerWidth < 768;
 
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: false, powerPreference: "high-performance" });
-  renderer.setClearColor(0x02070a, 1);
+  // Clear to black: the post chain adds the midnight base back at the very end (post.ts),
+  // because clearing to midnight inside the HDR chain came out teal.
+  renderer.setClearColor(0x000000, 1);
   renderer.setPixelRatio(Math.min(window.devicePixelRatio, isPhone ? 1.75 : 2));
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.1;
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(FOV, 1, 0.1, 400);
   const timer = new THREE.Timer();
   timer.connect(document);
+  const post = createPost(renderer, scene, camera, isPhone);
+
+  // --- Pointer: the ribbon and particles lean toward it, the camera drifts with it.
+  const pointer = { x: 0, y: 0, sx: 0, sy: 0, active: 0, target: 0 };
+  const onPointer = (e: PointerEvent) => {
+    pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
+    pointer.y = -(e.clientY / window.innerHeight) * 2 + 1;
+    pointer.target = 1;
+  };
+  const onPointerEnd = (e: PointerEvent) => {
+    if (e.pointerType !== "mouse") pointer.target = 0; // phones: only while touching
+  };
+  const onLeave = () => (pointer.target = 0);
+  window.addEventListener("pointermove", onPointer, { passive: true });
+  window.addEventListener("pointerdown", onPointer, { passive: true });
+  window.addEventListener("pointerup", onPointerEnd, { passive: true });
+  document.documentElement.addEventListener("pointerleave", onLeave);
+  const raycaster = new THREE.Raycaster();
+  const plane = new THREE.Plane();
+  const pointerWorld = new THREE.Vector3();
+  const ndc = new THREE.Vector2();
 
   // --- Ribbon ---------------------------------------------------------------
   const path = buildPath();
@@ -59,8 +85,19 @@ export function createEngine(canvas: HTMLCanvasElement) {
     const f = clamp01(u) * (TABLE_SIZE - 1);
     const i = Math.min(TABLE_SIZE - 2, Math.floor(f));
     out.lerpVectors(table[i], table[i + 1], f - i);
-    return out.add(sway(u, t, tmp2));
+    out.add(sway(u, t, tmp2));
+    return bend(out);
   };
+  // Same maths as BEND_GLSL in ribbon.ts: pull gently toward the pointer.
+  const bend = (p: THREE.Vector3) => {
+    const strength = ribbon.uniforms.uPointerStrength.value;
+    if (strength < 0.001) return p;
+    tmp3.subVectors(ribbon.uniforms.uPointer.value, p);
+    const d2 = tmp3.lengthSq();
+    const r = ribbon.uniforms.uPointerRadius.value;
+    return p.addScaledVector(tmp3, Math.exp(-d2 / (r * r)) * strength);
+  };
+  const tmp3 = new THREE.Vector3();
   const tmp = new THREE.Vector3();
   const tmp2 = new THREE.Vector3();
 
@@ -105,12 +142,34 @@ export function createEngine(canvas: HTMLCanvasElement) {
   scene.add(new THREE.Points(pGeo, pMat));
   const pColor = new THREE.Color();
 
+  // --- Dust: faint motes through the whole scene, for depth ------------------
+  const DUST = isPhone ? 350 : 900;
+  const dPos = new Float32Array(DUST * 3);
+  for (let i = 0; i < DUST; i++) {
+    dPos[i * 3] = (Math.random() - 0.5) * 34;
+    dPos[i * 3 + 1] = 8 - Math.random() * 72;
+    dPos[i * 3 + 2] = -14 + Math.random() * 18;
+  }
+  const dGeo = new THREE.BufferGeometry();
+  dGeo.setAttribute("position", new THREE.BufferAttribute(dPos, 3));
+  const dMat = new THREE.PointsMaterial({
+    size: 0.07,
+    map: glow,
+    color: new THREE.Color(0x4fb6ea).multiplyScalar(0.55),
+    transparent: true,
+    depthWrite: false,
+    blending: THREE.AdditiveBlending,
+  });
+  const dust = new THREE.Points(dGeo, dMat);
+  scene.add(dust);
+
   // --- Camera cues, measured from the real page layout -----------------------
   let cues: Cue[] = [];
   let stopEls: { el: HTMLElement; anchor: number }[] = [];
   let vw = 1;
   let vh = 1;
 
+  const root = document.documentElement;
   const docTop = (el: Element) => el.getBoundingClientRect().top + window.scrollY;
   const ndcX = (el: Element) => {
     const r = el.getBoundingClientRect();
@@ -121,6 +180,7 @@ export function createEngine(canvas: HTMLCanvasElement) {
     vw = window.innerWidth;
     vh = window.innerHeight;
     renderer.setSize(vw, vh, false);
+    post.setSize(vw, vh);
     camera.aspect = vw / vh;
     camera.updateProjectionMatrix();
 
@@ -134,7 +194,7 @@ export function createEngine(canvas: HTMLCanvasElement) {
     // Hero: the ribbon sits where the static mark is (desktop) or low behind the text (phone).
     const mark = document.querySelector(".static-mark");
     const markRect = mark?.getBoundingClientRect();
-    if (desktop && markRect && markRect.height > 0) {
+    if (markRect && markRect.height > 0) {
       const top = markRect.top + window.scrollY;
       next.push({
         scroll: 0,
@@ -143,7 +203,7 @@ export function createEngine(canvas: HTMLCanvasElement) {
         ox: ndcX(mark!),
         oy: 1 - (2 * (top + markRect.height / 2)) / vh,
         reveal: markEndU,
-        dim: 1,
+        dim: desktop ? 1 : 0.7,
       });
     } else {
       next.push({ scroll: 0, target: MARK_CENTER.clone(), height: fitWidth(8.5), ox: 0, oy: -0.62, reveal: markEndU, dim: 0.55 });
@@ -155,12 +215,13 @@ export function createEngine(canvas: HTMLCanvasElement) {
       if (!STOP_POINTS[i]) return;
       const anchor = Math.min(maxScroll, docTop(el) + el.offsetHeight / 2 - vh / 2);
       stopEls.push({ el, anchor });
+      const card = el.querySelector(".step-card") ?? el;
       next.push({
         scroll: anchor,
         target: STOP_POINTS[i].clone(),
         height: desktop ? 8 : fitWidth(7),
-        ox: desktop ? (ndcX(el) < 0 ? 0.45 : -0.45) : 0,
-        oy: desktop ? 0 : 0.5,
+        ox: desktop ? (ndcX(card) < 0 ? 0.42 : -0.42) : 0,
+        oy: desktop ? 0 : 0.55,
         reveal: stopU[i] + 0.004,
         dim: desktop ? 1 : 0.7,
       });
@@ -178,7 +239,7 @@ export function createEngine(canvas: HTMLCanvasElement) {
         ox: 0,
         oy: 0,
         reveal: lastStop + (1 - lastStop) * 0.45,
-        dim: 0.3,
+        dim: 0.14,
       });
     }
     if (work) {
@@ -189,7 +250,7 @@ export function createEngine(canvas: HTMLCanvasElement) {
         ox: 0,
         oy: 0,
         reveal: lastStop + (1 - lastStop) * 0.85,
-        dim: 0.3,
+        dim: 0.14,
       });
     }
 
@@ -255,8 +316,30 @@ export function createEngine(canvas: HTMLCanvasElement) {
     look.copy(view.target);
     look.x -= (view.ox * view.height * camera.aspect) / 2;
     look.y -= (view.oy * view.height) / 2;
-    camera.position.set(look.x + Math.sin(t * 0.15) * 0.25, look.y + Math.cos(t * 0.12) * 0.15, look.z + dist);
+    const k = 1 - Math.exp(-dt * 4);
+    pointer.sx += (pointer.x - pointer.sx) * k;
+    pointer.sy += (pointer.y - pointer.sy) * k;
+    pointer.active += (pointer.target - pointer.active) * k;
+    const par = view.height * 0.04; // parallax scales with framing
+    camera.position.set(
+      look.x + Math.sin(t * 0.15) * 0.25 + pointer.sx * par,
+      look.y + Math.cos(t * 0.12) * 0.15 + pointer.sy * par,
+      look.z + dist,
+    );
     camera.lookAt(look);
+    camera.updateMatrixWorld();
+
+    // Where the pointer is, on the plane through what we're looking at.
+    ndc.set(pointer.sx, pointer.sy);
+    raycaster.setFromCamera(ndc, camera);
+    plane.set(new THREE.Vector3(0, 0, 1), -view.target.z);
+    if (raycaster.ray.intersectPlane(plane, pointerWorld)) ribbon.uniforms.uPointer.value.copy(pointerWorld);
+    ribbon.uniforms.uPointerStrength.value = 0.35 * pointer.active;
+    ribbon.uniforms.uPointerRadius.value = view.height * 0.16;
+    root.style.setProperty("--px", pointer.sx.toFixed(3));
+    root.style.setProperty("--py", pointer.sy.toFixed(3));
+    dust.rotation.y = Math.sin(t * 0.03) * 0.05;
+    dust.position.y = Math.sin(t * 0.1) * 0.3;
 
     ribbon.uniforms.uTime.value = t;
     ribbon.uniforms.uReveal.value = reveal;
@@ -286,8 +369,9 @@ export function createEngine(canvas: HTMLCanvasElement) {
 
     // Particles: only on the unspooled part, fading near the tip.
     seeds.forEach((p, i) => {
-      const u = (p.u0 + t * p.speed) % 1;
-      const fade = u <= reveal ? clamp01((reveal - u) / 0.01) * clamp01(u / 0.01) : 0;
+      // Particles loop over the unspooled part only, so the visible ribbon is always busy.
+      const u = ((p.u0 + t * p.speed) % 1) * reveal;
+      const fade = clamp01((reveal - u) / 0.01) * clamp01(u / 0.004);
       pointAt(u, t, tmp).add(p.off);
       tmp.toArray(pPos, i * 3);
       pColor.copy(CANTALOUPE).lerp(ELECTRIC, smooth(clamp01((u - 0.015) / 0.06))).multiplyScalar(fade * view.dim * 0.9);
@@ -302,7 +386,7 @@ export function createEngine(canvas: HTMLCanvasElement) {
       s.el.style.setProperty("--reveal", r.toFixed(3));
     }
 
-    renderer.render(scene, camera);
+    post.render(t);
   }
 
   // Layout changes (images loading, fonts, resize) re-measure the cues.
@@ -324,6 +408,15 @@ export function createEngine(canvas: HTMLCanvasElement) {
     },
     dispose() {
       renderer.setAnimationLoop(null);
+      window.removeEventListener("pointermove", onPointer);
+      window.removeEventListener("pointerdown", onPointer);
+      window.removeEventListener("pointerup", onPointerEnd);
+      root.removeEventListener("pointerleave", onLeave);
+      root.style.removeProperty("--px");
+      root.style.removeProperty("--py");
+      post.dispose();
+      dGeo.dispose();
+      dMat.dispose();
       cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener("resize", remeasure);
