@@ -1,9 +1,11 @@
 import Image from "next/image";
 import AnimatedLogo from "@/components/brand/AnimatedLogo";
+import ShinyText from "@/components/bits/ShinyText";
+import StarBorder from "@/components/bits/StarBorder";
+import Magnet from "@/components/bits/Magnet";
 
 /** Words of the headline; each one rises in on load. */
 const line1 = ["Your", "brand,", "online."];
-const line2 = ["End", "to", "End."];
 
 /**
  * Small glass cards floating around the 3D ribbon, one per step of the journey.
@@ -75,15 +77,37 @@ export default function Hero() {
         </h1>
         <p className="mt-8 font-heading text-[2.6rem] font-light leading-[1.05] tracking-tight sm:text-6xl lg:text-7xl">
           <span className="block">{line1.map((w) => word(w))}</span>
-          <span className="block font-semibold">{line2.map((w) => word(w, "text-shine"))}</span>
+          {/* React Bits ShinyText: a light sweeps across in brand blue */}
+          <span className="hero-line block font-semibold">
+            <ShinyText color="#0297de" shineColor="#d6f0ff" speed={2.4} delay={3} glow={0.35}>
+              End to End.
+            </ShinyText>
+          </span>
         </p>
         <p className="hero-fade mt-6 max-w-md text-lg text-cloud-muted">
           Brand, website, bookings and care for small local businesses. One friendly studio.
         </p>
         <div className="hero-fade mt-9 flex flex-wrap items-center gap-x-6 gap-y-4" style={{ animationDelay: "1.5s" }}>
-          <a href="#book" className="btn-primary btn-glow">
-            Book a free call
-          </a>
+          {/* React Bits Magnet + StarBorder: the button leans to the cursor, a star circles its edge */}
+          <Magnet padding={70} magnetStrength={4} maxOffset={14}>
+            <StarBorder
+              as="a"
+              href="#book"
+              radius={999}
+              thickness={1.5}
+              duration={3.5}
+              glow={0.9}
+              sparkle
+              color="#ffffff"
+              trailColor="#7fd3ff"
+              backgroundColor="#0297de"
+              textColor="#02070a"
+              borderColor="rgba(255,255,255,0.25)"
+              className="btn-glow min-h-12 px-7 font-heading font-semibold"
+            >
+              Book a free call
+            </StarBorder>
+          </Magnet>
           <a href="#packages" className="link-quiet">
             See packages
           </a>

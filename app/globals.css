@@ -211,6 +211,9 @@ button,
     rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) calc(0.7s + var(--i) * 0.09s) both,
     shine 5s linear 2.5s infinite;
 }
+.hero-line {
+  animation: rise 0.9s cubic-bezier(0.2, 0.7, 0.2, 1) 1s both;
+}
 .hero-fade {
   animation: rise 1s cubic-bezier(0.2, 0.7, 0.2, 1) 1.3s both;
 }

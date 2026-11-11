@@ -1,5 +1,6 @@
 import Section from "./Section";
 import { stops } from "@/lib/content";
+import SpotlightCard from "@/components/bits/SpotlightCard";
 
 /* Small, decorative visuals: one per step. Motion is CSS; --reveal (0..1, set from scroll) builds them in. */
 
@@ -136,7 +137,22 @@ export default function HowItWorks() {
               data-stop={stop.id}
               className={`flex min-h-[85svh] items-center md:min-h-[75vh] ${i % 2 ? "md:justify-end" : ""}`}
             >
-              <article className="step-card glass w-full max-w-md p-5 sm:p-6">
+              {/* React Bits SpotlightCard: a soft blue light follows the cursor */}
+              <SpotlightCard
+                role="article"
+                className="step-card glass w-full max-w-md p-5 sm:p-6"
+                spotlightColor="#0297de"
+                intensity={0.22}
+                spotlightSize={260}
+                borderGlow={0.8}
+                style={
+                  {
+                    "--spotlight-card-surface": "transparent",
+                    "--spotlight-card-border": "rgb(245 247 248 / 0.12)",
+                    "--spotlight-card-shadow": "0 30px 60px -30px rgb(2 151 222 / 0.35)",
+                  } as React.CSSProperties
+                }
+              >
                 <div aria-hidden="true" className="h-48 sm:h-52">
                   <Visual />
                 </div>
@@ -149,7 +165,7 @@ export default function HowItWorks() {
                     <p className="mt-1 text-sm text-cloud-muted">{stop.line}</p>
                   </div>
                 </div>
-              </article>
+              </SpotlightCard>
             </li>
           );
         })}
