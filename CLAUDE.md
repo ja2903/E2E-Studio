@@ -27,7 +27,8 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 - Icons/OG image: `app/icon.svg`, `app/apple-icon.png`, `app/opengraph-image.png`.
 - Copy lives in `lib/content.ts`. Case study images: `public/work/` (site screenshots taken from the live artifact).
 - Env: `CONTACT_EMAIL`, `RESEND_API_KEY`, optional `MAIL_FROM`, `NEXT_PUBLIC_SITE_URL` (see `.env.example`; real values only in `.env.local`).
-- Booking form: `components/sections/BookForm.tsx` → `app/api/book/route.ts` (validates, honeypot `website`, 5/10min per IP, sends via Resend REST with plain fetch, reply-to = visitor).
+- Booking form: `components/sections/BookForm.tsx` → `app/api/book/route.ts` (validates, honeypot `website`, 5/10min per IP, sends via Resend REST with plain fetch, reply-to = visitor). Form also has `method=post action=/api/book`: without JS the route takes the form post and 303-redirects to `/booking/sent` or `/booking/failed` (static pages, `components/sections/BookingResult.tsx`), so details never go in the URL. Loader markup lives in `app/page.tsx` (home only).
+- Phone testing: `allowedDevOrigins` in `next.config.ts` must list the Mac's Wi-Fi IP, or the phone gets no JS (endless reloads, no 3D, form falls back).
 - Orb: `components/ui/WarpOrb.tsx`, adapted from cult-ui AI Blob Warp (`@paper-design/shaders-react`; CSS pulse instead of `motion`). Pauses off-screen / reduced motion; carries `data-orb`.
 
 ## 3D engine (components/three)

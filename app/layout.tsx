@@ -45,10 +45,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body>
-        <div className="loader" aria-hidden="true">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/brand/logo-full-dark.svg" alt="" width={240} height={48} className="loader-logo" loading="eager" fetchPriority="high" />
-        </div>
         {children}
       </body>
     </html>

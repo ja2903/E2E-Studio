@@ -12,6 +12,11 @@ export default function Home() {
   return (
     // overflow-x: clip, never hidden (guide lesson 01)
     <main className="relative overflow-x-clip">
+      {/* Logo loader while the 3D compiles (shown via .loading-3d from layout.tsx, home page only) */}
+      <div className="loader" aria-hidden="true">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/logo-full-dark.svg" alt="" width={240} height={48} className="loader-logo" loading="eager" fetchPriority="high" />
+      </div>
       <SceneCanvas />
       <Nav />
       {/* React Bits ClickSpark: small blue and orange sparks on click (mouse only) */}

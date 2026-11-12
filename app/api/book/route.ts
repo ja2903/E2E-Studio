@@ -2,6 +2,11 @@
  * "Book a free call" form handler. Emails each booking to CONTACT_EMAIL via Resend
  * (plain fetch, no SDK). Secrets live in .env.local only: RESEND_API_KEY, CONTACT_EMAIL,
  * optional MAIL_FROM (defaults to Resend's test sender until a domain is verified).
+ *
+ * Two ways in:
+ * - JSON (the normal path, from BookForm's fetch): answers with JSON.
+ * - A plain form POST (if the page's scripts didn't load): redirects to /booking/sent or /booking/failed.
+ * Either way the details travel in the request body, never in the URL.
  */
 
 const NEEDS = ["Brand", "Website", "Bookings", "Care"];
@@ -19,16 +24,11 @@ function limited(ip: string) {
 
 const str = (v: unknown, max: number) => (typeof v === "string" ? v.trim().slice(0, max) : "");
 
-export async function POST(request: Request) {
-  let body: Record<string, unknown>;
-  try {
-    body = await request.json();
-  } catch {
-    return Response.json({ error: "bad_request" }, { status: 400 });
-  }
+type Result = { ok: true } | { ok: false; error: string; status: number };
 
+async function book(body: Record<string, unknown>, ip: string): Promise<Result> {
   // Honeypot: real people never fill this hidden field. Pretend it worked.
-  if (str(body.website, 200)) return Response.json({ ok: true });
+  if (str(body.website, 200)) return { ok: true };
 
   const name = str(body.name, 100);
   const business = str(body.business, 120);
@@ -37,18 +37,14 @@ export async function POST(request: Request) {
   const message = str(body.message, 3000);
   const needs = Array.isArray(body.needs) ? body.needs.filter((n): n is string => NEEDS.includes(n as string)) : [];
 
-  if (!name || !business || !EMAIL_RE.test(email)) {
-    return Response.json({ error: "invalid" }, { status: 422 });
-  }
-
-  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "local";
-  if (limited(ip)) return Response.json({ error: "rate_limited" }, { status: 429 });
+  if (!name || !business || !EMAIL_RE.test(email)) return { ok: false, error: "invalid", status: 422 };
+  if (limited(ip)) return { ok: false, error: "rate_limited", status: 429 };
 
   const key = process.env.RESEND_API_KEY;
   const to = process.env.CONTACT_EMAIL;
   if (!key || !to) {
     console.error("[book] RESEND_API_KEY or CONTACT_EMAIL is not set in .env.local");
-    return Response.json({ error: "not_configured" }, { status: 500 });
+    return { ok: false, error: "not_configured", status: 500 };
   }
 
   const text = [
@@ -75,7 +71,37 @@ export async function POST(request: Request) {
 
   if (!res.ok) {
     console.error("[book] Resend error", res.status, await res.text());
-    return Response.json({ error: "send_failed" }, { status: 502 });
+    return { ok: false, error: "send_failed", status: 502 };
   }
-  return Response.json({ ok: true });
+  return { ok: true };
+}
+
+export async function POST(request: Request) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0].trim() ?? "local";
+  const type = request.headers.get("content-type") ?? "";
+
+  // Plain form post (no JavaScript): send, then redirect to a simple result page.
+  if (type.includes("application/x-www-form-urlencoded") || type.includes("multipart/form-data")) {
+    let result: Result;
+    try {
+      const form = await request.formData();
+      const body: Record<string, unknown> = Object.fromEntries(form);
+      body.needs = form.getAll("needs");
+      result = await book(body, ip);
+    } catch {
+      result = { ok: false, error: "bad_request", status: 400 };
+    }
+    const to = result.ok ? "/booking/sent" : "/booking/failed";
+    // Relative Location: works whatever host the visitor used (phone on Wi-Fi, live domain).
+    return new Response(null, { status: 303, headers: { Location: to } });
+  }
+
+  let body: Record<string, unknown>;
+  try {
+    body = await request.json();
+  } catch {
+    return Response.json({ error: "bad_request" }, { status: 400 });
+  }
+  const result = await book(body, ip);
+  return result.ok ? Response.json({ ok: true }) : Response.json({ error: result.error }, { status: result.status });
 }

@@ -77,7 +77,7 @@ export default function BookForm() {
   const sending = status === "sending";
 
   return (
-    <form onSubmit={onSubmit} className="card relative grid gap-5 p-6 sm:p-8" aria-label="Book a free call" aria-busy={sending}>
+    <form method="post" action="/api/book" onSubmit={onSubmit} className="card relative grid gap-5 p-6 sm:p-8" aria-label="Book a free call" aria-busy={sending}>
       <div className="grid gap-5 sm:grid-cols-2">
         <label className={label}>
           Your name
