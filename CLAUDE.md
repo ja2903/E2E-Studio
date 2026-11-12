@@ -33,6 +33,8 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 ## 3D engine (components/three)
 - `path.ts`: the ribbon's route (flow mark, then 4 stops, then the orb). `ribbon.ts`: shader ribbon + glow texture. `engine.ts`: clock, camera cues, particles, dust, nodes, cursor bend/parallax (sets `--px/--py` on `<html>`), HTML reveals. `post.ts`: bloom → ACES → grain, then adds the midnight base (clearing to midnight inside the HDR chain came out teal).
 - Cues are measured from the page: hero → `.static-mark` box, steps → `[data-stop]`, end → `[data-orb]`. Change layout freely; cues re-measure on resize.
+- Performance: frame-rate watchdog in `engine.ts` (`watchFps`): below 40 fps over 2s it steps down (1x pixels → bloom off → 0.75x), never back up; level shows as `data-quality` on `<html>`. Pixel ratio cap 1.75 phones / 2 desktop. Test the slow path by busy-waiting 30ms per rAF via `SHOOT_EVAL` (headless runs ~60 fps).
+- Loader: inline script in `layout.tsx` adds `loading-3d` (skipped for reduced motion); `.loader` (logo on midnight) covers the page until `has-3d`, failure, or 4s (CSS backstop 5s).
 - Engine adds `has-3d` to `<html>` when running. Reduced motion or no WebGL: no engine, static mark stays, all text visible.
 
 - Hero: `components/brand/AnimatedLogo.tsx` (CSS-animated logo, `.logo-anim` in globals.css), floating step cards, word-by-word headline. Pricing tilt: `components/ui/TiltCard.tsx`.
@@ -46,4 +48,4 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 - Case study: The Cake and Candle Co. (bespoke baking, Hatfield). Name confirmed by Jay 2026-11-11. Unfinished copy is `[PLACEHOLDER]`.
 
 ## Stages
-1. Scaffold ✅ 2. Static sections + brand ✅ 3. Ribbon + camera cues ✅ 4. Post/finish, Lenis, Blueprint ✅ 5. Orb + form ✅ 6. Performance pass
+1. Scaffold ✅ 2. Static sections + brand ✅ 3. Ribbon + camera cues ✅ 4. Post/finish, Lenis, Blueprint ✅ 5. Orb + form ✅ 6. Performance pass ✅

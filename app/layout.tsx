@@ -34,8 +34,23 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-GB" className={`${jakarta.variable} ${inter.variable} antialiased`}>
-      <body>{children}</body>
+    // suppressHydrationWarning: the inline script below adds a class to <html> before React loads.
+    <html lang="en-GB" className={`${jakarta.variable} ${inter.variable} antialiased`} suppressHydrationWarning>
+      <head>
+        {/* Show the logo loader only when the 3D will actually start (JS on, motion allowed). */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("loading-3d")}catch(e){}`,
+          }}
+        />
+      </head>
+      <body>
+        <div className="loader" aria-hidden="true">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/brand/logo-full-dark.svg" alt="" width={240} height={48} className="loader-logo" loading="eager" fetchPriority="high" />
+        </div>
+        {children}
+      </body>
     </html>
   );
 }

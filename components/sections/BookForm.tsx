@@ -65,8 +65,8 @@ export default function BookForm() {
         <span aria-hidden="true" className="mx-auto grid size-14 place-items-center rounded-full bg-electric text-2xl text-midnight">
           ✓
         </span>
-        <h3 className="text-2xl font-semibold">Thanks, we've got it.</h3>
-        <p className="text-cloud-muted">We'll be in touch soon to find a time that suits you.</p>
+        <h3 className="text-2xl font-semibold">{"Thanks, we've got it."}</h3>
+        <p className="text-cloud-muted">{"We'll be in touch soon to find a time that suits you."}</p>
         <button type="button" onClick={() => setStatus("idle")} className="link-quiet mx-auto">
           Send another
         </button>

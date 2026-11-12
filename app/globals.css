@@ -323,6 +323,47 @@ button,
   .tilt { transform: none !important; }
 }
 
+/* Logo loader: covers the page while the 3D compiles (layout.tsx + SceneCanvas).
+   Hidden unless JS added .loading-3d; CSS also clears it after 5s as a last resort. */
+.loader {
+  display: none;
+}
+.loading-3d .loader {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  background: var(--midnight);
+  animation: loader-out 0.5s 5s forwards;
+}
+.has-3d .loader {
+  display: grid;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  place-items: center;
+  background: var(--midnight);
+  pointer-events: none;
+  animation: loader-out 0.5s forwards;
+}
+.loader-logo {
+  width: min(15rem, 60vw);
+  height: auto;
+  animation: loader-breathe 1.6s ease-in-out infinite;
+}
+@keyframes loader-out {
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+@keyframes loader-breathe {
+  50% {
+    opacity: 0.55;
+  }
+}
+
 /* 3D scene (components/three). The canvas fades in once the engine is ready. */
 .scene-canvas {
   opacity: 0;

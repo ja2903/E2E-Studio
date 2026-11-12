@@ -45,7 +45,8 @@ export function createEngine(canvas: HTMLCanvasElement) {
   // Clear to black: the post chain adds the midnight base back at the very end (post.ts),
   // because clearing to midnight inside the HDR chain came out teal.
   renderer.setClearColor(0x000000, 1);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, isPhone ? 1.75 : 2));
+  const maxRatio = Math.min(window.devicePixelRatio, isPhone ? 1.75 : 2);
+  renderer.setPixelRatio(maxRatio);
   renderer.toneMapping = THREE.ACESFilmicToneMapping;
   renderer.toneMappingExposure = 1.1;
 
@@ -54,6 +55,48 @@ export function createEngine(canvas: HTMLCanvasElement) {
   const timer = new THREE.Timer();
   timer.connect(document);
   const post = createPost(renderer, scene, camera, isPhone);
+
+  // --- Frame-rate watchdog. Averages fps over 2s windows (after a 2s warm-up);
+  // below 40 it steps down: 1) render at 1x pixels, 2) bloom off, 3) 0.75x pixels.
+  // Steps only go down, never back up, so quality never flickers.
+  const LEVELS = [
+    { ratio: maxRatio, bloom: true },
+    { ratio: Math.min(maxRatio, 1), bloom: true },
+    { ratio: Math.min(maxRatio, 1), bloom: false },
+    { ratio: Math.min(maxRatio, 0.75), bloom: false },
+  ];
+  const fps = { level: 0, frames: 0, time: 0, warm: 2, last: 0 };
+  const resetFps = () => {
+    fps.frames = 0;
+    fps.time = 0;
+    fps.last = 0;
+  };
+  // A hidden tab pauses frames; don't count the gap as slowness.
+  document.addEventListener("visibilitychange", resetFps);
+  function watchFps(timestamp: number) {
+    if (fps.level >= LEVELS.length - 1) return;
+    const ms = fps.last ? Math.min(timestamp - fps.last, 1000) : 0;
+    fps.last = timestamp;
+    if (!ms) return;
+    if (fps.warm > 0) {
+      fps.warm -= ms / 1000;
+      return;
+    }
+    fps.frames++;
+    fps.time += ms / 1000;
+    if (fps.time < 2) return;
+    const avg = fps.frames / fps.time;
+    resetFps();
+    if (avg >= 40) return;
+    fps.level++;
+    fps.warm = 1; // let the new setting settle before judging again
+    const q = LEVELS[fps.level];
+    renderer.setPixelRatio(q.ratio);
+    post.setBloom(q.bloom);
+    post.setSize(vw, vh);
+    renderer.setSize(vw, vh, false);
+    document.documentElement.dataset.quality = String(fps.level);
+  }
 
   // --- Pointer: the ribbon and particles lean toward it, the camera drifts with it.
   const pointer = { x: 0, y: 0, sx: 0, sy: 0, active: 0, target: 0 };
@@ -311,6 +354,7 @@ export function createEngine(canvas: HTMLCanvasElement) {
     timer.update(timestamp);
     const dt = Math.min(timer.getDelta(), 0.1);
     const t = timer.getElapsed();
+    watchFps(timestamp);
 
     // Lenis eases the page itself on this clock; the ribbon reads the same scroll, so they never drift apart.
     lenis?.raf(timestamp);
@@ -448,6 +492,8 @@ export function createEngine(canvas: HTMLCanvasElement) {
       cancelAnimationFrame(raf);
       ro.disconnect();
       window.removeEventListener("resize", remeasure);
+      document.removeEventListener("visibilitychange", resetFps);
+      delete document.documentElement.dataset.quality;
       timer.dispose();
       ribbon.dispose();
       glow.dispose();

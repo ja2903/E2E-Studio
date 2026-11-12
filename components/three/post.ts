@@ -49,6 +49,10 @@ export function createPost(renderer: THREE.WebGLRenderer, scene: THREE.Scene, ca
       // Bloom is soft anyway: run it smaller on phones to save battery.
       if (isPhone) bloom.setSize(w / 2, h / 2);
     },
+    /** The watchdog's second step down: drop the glow on slow devices. */
+    setBloom(on: boolean) {
+      bloom.enabled = on;
+    },
     render(t: number) {
       grain.uniforms.uTime.value = t;
       composer.render();

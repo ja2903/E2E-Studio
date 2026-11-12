@@ -12,11 +12,14 @@ export default function SceneCanvas() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    if (!canvas || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const root = document.documentElement;
+    // The logo loader (layout.tsx) covers the page while shaders compile; drop it on any failure.
+    const endLoader = () => root.classList.remove("loading-3d");
+    if (!canvas || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return endLoader();
 
     let engine: { dispose(): void } | null = null;
     let cancelled = false;
-    const root = document.documentElement;
+    const loaderCap = window.setTimeout(endLoader, 4000); // never hold the page longer than this
 
     import("./engine")
       .then(async ({ createEngine }) => {
@@ -26,14 +29,17 @@ export default function SceneCanvas() {
         await e.start();
         if (cancelled) return;
         root.classList.add("has-3d");
+        endLoader();
       })
       .catch((err) => {
         // No WebGL: the static page still works.
         console.warn("3D scene unavailable:", err);
+        endLoader();
       });
 
     return () => {
       cancelled = true;
+      window.clearTimeout(loaderCap);
       root.classList.remove("has-3d");
       engine?.dispose();
     };
