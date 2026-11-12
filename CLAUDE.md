@@ -9,6 +9,7 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 - `npm install` then `npm run dev` → http://localhost:3000
 - Test on a real phone: `npx next dev --hostname 0.0.0.0` (headless screenshots render 3D at ~1 fps).
 - `npm run build` before committing.
+- Live: https://e2-e-studio.vercel.app (Vercel, auto-deploys from `main`; env vars set in Vercel settings, redeploy after changing them).
 - Screenshots (needs Chrome, site running): `node scripts/shoot.mjs http://localhost:3000 /tmp/shot 390 844 1 "0,0.5"` (width height mobile scroll-fractions). Prints console errors.
 
 ## Tech
