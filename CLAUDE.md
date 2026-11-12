@@ -26,7 +26,9 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 - `components/three/`: the 3D engine. `components/sections/`: page sections.
 - Icons/OG image: `app/icon.svg`, `app/apple-icon.png`, `app/opengraph-image.png`.
 - Copy lives in `lib/content.ts`. Case study images: `public/work/` (site screenshots taken from the live artifact).
-- Env: `CONTACT_EMAIL`, `NEXT_PUBLIC_SITE_URL` (see `.env.example`).
+- Env: `CONTACT_EMAIL`, `RESEND_API_KEY`, optional `MAIL_FROM`, `NEXT_PUBLIC_SITE_URL` (see `.env.example`; real values only in `.env.local`).
+- Booking form: `components/sections/BookForm.tsx` → `app/api/book/route.ts` (validates, honeypot `website`, 5/10min per IP, sends via Resend REST with plain fetch, reply-to = visitor).
+- Orb: `components/ui/WarpOrb.tsx`, adapted from cult-ui AI Blob Warp (`@paper-design/shaders-react`; CSS pulse instead of `motion`). Pauses off-screen / reduced motion; carries `data-orb`.
 
 ## 3D engine (components/three)
 - `path.ts`: the ribbon's route (flow mark, then 4 stops, then the orb). `ribbon.ts`: shader ribbon + glow texture. `engine.ts`: clock, camera cues, particles, dust, nodes, cursor bend/parallax (sets `--px/--py` on `<html>`), HTML reveals. `post.ts`: bloom → ACES → grain, then adds the midnight base (clearing to midnight inside the HDR chain came out teal).
@@ -44,4 +46,4 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 - Case study: The Cake and Candle Co. (bespoke baking, Hatfield). Name confirmed by Jay 2026-11-11. Unfinished copy is `[PLACEHOLDER]`.
 
 ## Stages
-1. Scaffold ✅ 2. Static sections + brand ✅ 3. Ribbon + camera cues ✅ 4. Post/finish, Lenis, Blueprint ✅ 5. Orb + form 6. Performance pass
+1. Scaffold ✅ 2. Static sections + brand ✅ 3. Ribbon + camera cues ✅ 4. Post/finish, Lenis, Blueprint ✅ 5. Orb + form ✅ 6. Performance pass

@@ -422,3 +422,30 @@ main::before {
   translate: 1rem 0;
   background: var(--electric);
 }
+
+/* Booking orb (components/ui/WarpOrb.tsx). Base style is the finished, still look. */
+.warp-orb {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 9999px;
+  opacity: 0.9;
+  box-shadow: 0 0 80px -10px rgb(2 151 222 / 0.55), inset 0 0 0 1px rgb(245 247 248 / 0.12);
+}
+.warp-orb-inner {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  border-radius: inherit;
+  /* Shown before the shader loads, or if WebGL is missing. */
+  background: radial-gradient(circle at 35% 35%, var(--electric), var(--midnight) 70%);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .warp-orb.is-live .warp-orb-inner { animation: orb-pulse 5.2s ease-in-out infinite; }
+}
+@keyframes orb-pulse {
+  0%, 100% { transform: scale(1) rotate(0deg); }
+  33% { transform: scale(1.04) rotate(2deg); }
+  66% { transform: scale(0.99) rotate(-1.5deg); }
+}
+[data-blueprint] .warp-orb { box-shadow: none; outline: 1px dashed rgb(2 151 222 / 0.7); outline-offset: 8px; }
+[data-blueprint] .warp-orb-inner { opacity: 0.35; }
