@@ -1,4 +1,5 @@
 import Image from "next/image";
+import BlueprintToggle from "@/components/ui/BlueprintToggle";
 
 export default function Footer() {
   return (
@@ -11,11 +12,7 @@ export default function Footer() {
           </p>
         </div>
         <div className="flex items-center gap-6 text-sm text-cloud-muted">
-          {/* Blueprint toggle: wired up with the 3D scene (Stage 4) */}
-          <button type="button" role="switch" aria-checked="false" disabled className="flex items-center gap-2 opacity-60">
-            <span aria-hidden="true" className="h-5 w-9 rounded-full border border-electric" />
-            Blueprint
-          </button>
+          <BlueprintToggle />
           <p>© E2E Studio</p>
         </div>
       </div>

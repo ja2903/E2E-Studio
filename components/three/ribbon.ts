@@ -70,6 +70,7 @@ export function createRibbon(points: THREE.Vector3[]) {
     uPointer: { value: new THREE.Vector3(0, 0, 0) },
     uPointerStrength: { value: 0 },
     uPointerRadius: { value: 2 },
+    uBlueprint: { value: 0 }, // 0 = glowing ribbon, 1 = blueprint (outline + ribs)
   };
 
   const make = (width: number, strength: number, core: number) =>
@@ -113,6 +114,7 @@ export function createRibbon(points: THREE.Vector3[]) {
         uniform float uCore;
         uniform vec3 uColorA;
         uniform vec3 uColorB;
+        uniform float uBlueprint;
         varying float vAlong;
         varying float vAcross;
         varying float vFacing;
@@ -125,7 +127,15 @@ export function createRibbon(points: THREE.Vector3[]) {
           vec3 col = mix(uColorA, uColorB, smoothstep(0.015, 0.075, vAlong));
           float edge = mix(1.6, 0.8, vFacing);
           vec3 c = col * (soft * edge + core) + vec3(0.9, 0.95, 1.0) * core * 0.35 + col * head * 1.5;
-          gl_FragColor = vec4(c * uStrength * uDim * tip, 1.0);
+          // Blueprint: just the two edges and evenly spaced ribs, in pale electric blue.
+          float ew = fwidth(vAcross) * 1.4;
+          float edges = 1.0 - smoothstep(0.0, ew, 1.0 - abs(vAcross));
+          float r = vAlong * 420.0;
+          float rd = min(fract(r), 1.0 - fract(r));
+          float ribs = (1.0 - smoothstep(0.0, fwidth(r) * 1.2, rd)) * 0.55;
+          vec3 bp = vec3(0.45, 0.78, 1.0) * max(edges, ribs) * uCore * 0.8;
+          c = mix(c * uStrength, bp, uBlueprint);
+          gl_FragColor = vec4(c * uDim * tip, 1.0);
           #include <colorspace_fragment>
         }
       `,
@@ -164,6 +174,34 @@ export function glowTexture() {
   grad.addColorStop(1, "rgba(255,255,255,0)");
   g.fillStyle = grad;
   g.fillRect(0, 0, size, size);
+  const tex = new THREE.CanvasTexture(c);
+  tex.colorSpace = THREE.SRGBColorSpace;
+  return tex;
+}
+
+/** Thin ring with a crosshair: blueprint markers for the stop nodes and the end. */
+export function ringTexture() {
+  const size = 128;
+  const c = document.createElement("canvas");
+  c.width = c.height = size;
+  const g = c.getContext("2d")!;
+  g.strokeStyle = "#fff";
+  g.lineWidth = 3;
+  g.beginPath();
+  g.arc(size / 2, size / 2, size * 0.3, 0, Math.PI * 2);
+  g.stroke();
+  g.lineWidth = 2;
+  g.beginPath();
+  for (const [x1, y1, x2, y2] of [
+    [8, 64, 34, 64],
+    [94, 64, 120, 64],
+    [64, 8, 64, 34],
+    [64, 94, 64, 120],
+  ]) {
+    g.moveTo(x1, y1);
+    g.lineTo(x2, y2);
+  }
+  g.stroke();
   const tex = new THREE.CanvasTexture(c);
   tex.colorSpace = THREE.SRGBColorSpace;
   return tex;

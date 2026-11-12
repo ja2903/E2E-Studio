@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import Lenis from "lenis";
 import {
   buildPath,
   sampleTable,
@@ -10,7 +11,7 @@ import {
   STOP_POINTS,
   END_POINT,
 } from "./path";
-import { createRibbon, glowTexture, CANTALOUPE, ELECTRIC } from "./ribbon";
+import { createRibbon, glowTexture, ringTexture, CANTALOUPE, ELECTRIC } from "./ribbon";
 import { createPost } from "./post";
 
 /**
@@ -18,6 +19,8 @@ import { createPost } from "./post";
  * particles, the camera and the HTML step reveals. Scroll position (smoothed)
  * picks a spot between camera cues; each cue frames its target by SIZE (how many
  * world units fill the screen), so it looks the same on any screen.
+ * Lenis (smooth wheel scrolling) runs on the same clock, so page and ribbon move together.
+ * Blueprint mode: `data-blueprint` on <html> (set by the footer switch).
  */
 
 type Cue = {
@@ -103,20 +106,24 @@ export function createEngine(canvas: HTMLCanvasElement) {
 
   // --- Glows: stop nodes, start dot (cantaloupe), end dot (blue) -------------
   const glow = glowTexture();
-  const sprite = (color: THREE.Color, scale: number) => {
+  const ring = ringTexture();
+  const sprite = (color: THREE.Color, scale: number, map = glow) => {
     const s = new THREE.Sprite(
-      new THREE.SpriteMaterial({ map: glow, color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }),
+      new THREE.SpriteMaterial({ map, color, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending }),
     );
     s.scale.setScalar(scale);
     scene.add(s);
     return s;
   };
   const white = new THREE.Color(0xdff3ff);
-  const nodes = stopU.map((u) => ({ u, halo: sprite(ELECTRIC, 2.4), core: sprite(white, 0.45) }));
+  const bpBlue = new THREE.Color(0x73c7ff);
+  const nodes = stopU.map((u) => ({ u, halo: sprite(ELECTRIC, 2.4), core: sprite(white, 0.45), ring: sprite(bpBlue, 1.1, ring) }));
   const startDot = sprite(CANTALOUPE, 1.3);
   const startCore = sprite(new THREE.Color(0xffd2c4), 0.35);
   const endDot = sprite(ELECTRIC, 3.2);
   const endCore = sprite(white, 0.6);
+  const endRing = sprite(bpBlue, 1.6, ring);
+  const startRing = sprite(bpBlue, 0.8, ring);
 
   // --- Particles flowing start -> end ----------------------------------------
   const COUNT = isPhone ? 160 : 280;
@@ -278,7 +285,9 @@ export function createEngine(canvas: HTMLCanvasElement) {
   // --- Per-frame -------------------------------------------------------------
   const view = { target: new THREE.Vector3(), height: 1, ox: 0, oy: 0, reveal: 0, dim: 1 };
   const look = new THREE.Vector3();
-  let smoothScroll = window.scrollY;
+  let scroll = window.scrollY;
+  let lenis: Lenis | null = null;
+  let bp = root.hasAttribute("data-blueprint") ? 1 : 0;
 
   function sampleCues(s: number) {
     if (!cues.length) return;
@@ -303,9 +312,12 @@ export function createEngine(canvas: HTMLCanvasElement) {
     const dt = Math.min(timer.getDelta(), 0.1);
     const t = timer.getElapsed();
 
-    // Smoothed scroll: everything below reads this one value.
-    smoothScroll += (window.scrollY - smoothScroll) * (1 - Math.exp(-dt * 7));
-    sampleCues(smoothScroll);
+    // Lenis eases the page itself on this clock; the ribbon reads the same scroll, so they never drift apart.
+    lenis?.raf(timestamp);
+    scroll = window.scrollY;
+    sampleCues(scroll);
+    bp += ((root.hasAttribute("data-blueprint") ? 1 : 0) - bp) * (1 - Math.exp(-dt * 5));
+    const glowK = 1 - bp * 0.85; // glows mostly fade out in blueprint
 
     // Intro: the mark draws itself in over ~2s on load.
     const intro = smooth(clamp01((t - 0.2) / 2));
@@ -344,28 +356,37 @@ export function createEngine(canvas: HTMLCanvasElement) {
     ribbon.uniforms.uTime.value = t;
     ribbon.uniforms.uReveal.value = reveal;
     ribbon.uniforms.uDim.value = view.dim;
+    ribbon.uniforms.uBlueprint.value = bp;
 
     // Dots and nodes ride the swaying ribbon.
     const pulse = 0.9 + Math.sin(t * 2) * 0.1;
     pointAt(0, t, tmp);
     startDot.position.copy(tmp);
     startCore.position.copy(tmp);
-    startDot.material.opacity = startCore.material.opacity = clamp01(intro * 4) * view.dim;
+    startRing.position.copy(tmp);
+    startDot.material.opacity = startCore.material.opacity = clamp01(intro * 4) * view.dim * glowK;
+    startRing.material.opacity = clamp01(intro * 4) * view.dim * bp;
     nodes.forEach((n) => {
       pointAt(n.u, t, tmp);
       n.halo.position.copy(tmp);
       n.core.position.copy(tmp);
+      n.ring.position.copy(tmp);
       const on = smooth(clamp01((reveal - n.u + 0.004) / 0.006));
-      n.halo.material.opacity = on * pulse * view.dim;
-      n.core.material.opacity = on * view.dim;
+      n.halo.material.opacity = on * pulse * view.dim * glowK;
+      n.core.material.opacity = on * view.dim * glowK;
+      n.ring.material.opacity = on * view.dim * bp;
+      n.ring.material.rotation = t * 0.2;
       n.halo.scale.setScalar(2.4 * (0.6 + 0.4 * on));
     });
     pointAt(1, t, tmp);
     endDot.position.copy(tmp);
     endCore.position.copy(tmp);
+    endRing.position.copy(tmp);
     const endOn = smooth(clamp01((reveal - 0.985) / 0.015));
-    endDot.material.opacity = endOn * pulse;
-    endCore.material.opacity = endOn;
+    endDot.material.opacity = endOn * pulse * glowK;
+    endCore.material.opacity = endOn * glowK;
+    endRing.material.opacity = endOn * bp;
+    endRing.material.rotation = -t * 0.2;
 
     // Particles: only on the unspooled part, fading near the tip.
     seeds.forEach((p, i) => {
@@ -374,7 +395,10 @@ export function createEngine(canvas: HTMLCanvasElement) {
       const fade = clamp01((reveal - u) / 0.01) * clamp01(u / 0.004);
       pointAt(u, t, tmp).add(p.off);
       tmp.toArray(pPos, i * 3);
-      pColor.copy(CANTALOUPE).lerp(ELECTRIC, smooth(clamp01((u - 0.015) / 0.06))).multiplyScalar(fade * view.dim * 0.9);
+      pColor
+        .copy(CANTALOUPE)
+        .lerp(ELECTRIC, Math.max(bp, smooth(clamp01((u - 0.015) / 0.06))))
+        .multiplyScalar(fade * view.dim * 0.9 * (1 - bp * 0.5));
       pColor.toArray(pCol, i * 3);
     });
     pGeo.attributes.position.needsUpdate = true;
@@ -382,7 +406,7 @@ export function createEngine(canvas: HTMLCanvasElement) {
 
     // HTML step reveals, from the same smoothed scroll (not IntersectionObserver).
     for (const s of stopEls) {
-      const r = smooth(clamp01((smoothScroll - (s.anchor - vh * 0.55)) / (vh * 0.35)));
+      const r = smooth(clamp01((scroll - (s.anchor - vh * 0.55)) / (vh * 0.35)));
       s.el.style.setProperty("--reveal", r.toFixed(3));
     }
 
@@ -403,11 +427,15 @@ export function createEngine(canvas: HTMLCanvasElement) {
   return {
     async start() {
       await renderer.compileAsync(scene, camera);
+      // Smooth wheel scrolling. Touch keeps the phone's own native scrolling.
+      // Menu links glide to their section, landing just under the fixed top bar.
+      lenis = new Lenis({ autoRaf: false, lerp: 0.1, anchors: { offset: -64 } });
       tick(performance.now());
       renderer.setAnimationLoop(tick);
     },
     dispose() {
       renderer.setAnimationLoop(null);
+      lenis?.destroy();
       window.removeEventListener("pointermove", onPointer);
       window.removeEventListener("pointerdown", onPointer);
       window.removeEventListener("pointerup", onPointerEnd);
@@ -423,6 +451,7 @@ export function createEngine(canvas: HTMLCanvasElement) {
       timer.dispose();
       ribbon.dispose();
       glow.dispose();
+      ring.dispose();
       pGeo.dispose();
       pMat.dispose();
       scene.traverse((o) => {

@@ -35,6 +35,8 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 
 - Hero: `components/brand/AnimatedLogo.tsx` (CSS-animated logo, `.logo-anim` in globals.css), floating step cards, word-by-word headline. Pricing tilt: `components/ui/TiltCard.tsx`.
 - All CSS motion uses the finished look as the base style, so reduced motion shows everything static.
+- Smooth scroll: Lenis is created in `engine.ts` and stepped by the engine's clock (`lenis.raf` in `tick`), so page and ribbon never drift. Wheel only; touch stays native. Anchor links offset −64px for the nav. No engine → native `scroll-behavior: smooth`.
+- Blueprint: `components/ui/BlueprintToggle.tsx` (footer) sets `data-blueprint` on `<html>` + localStorage `e2e-blueprint`. Engine eases `uBlueprint` (ribbon → edges + ribs, glows → ring markers); CSS adds the grid (`main::before`) and dashed card outlines.
 
 ## Key decisions / rules
 - `overflow-x: clip`, never `hidden`. Scroll reveals come from scroll position, not IntersectionObserver.
@@ -42,4 +44,4 @@ Full brief: `../WEBSITE-BRIEF.md`. 3D method: `../3D Updated Guide.pdf`. Brand a
 - Case study: The Cake and Candle Co. (bespoke baking, Hatfield). Name confirmed by Jay 2026-11-11. Unfinished copy is `[PLACEHOLDER]`.
 
 ## Stages
-1. Scaffold ✅ 2. Static sections + brand ✅ 3. Ribbon + camera cues ✅ 4. Post/finish 5. Orb + form 6. Performance pass
+1. Scaffold ✅ 2. Static sections + brand ✅ 3. Ribbon + camera cues ✅ 4. Post/finish, Lenis, Blueprint ✅ 5. Orb + form 6. Performance pass

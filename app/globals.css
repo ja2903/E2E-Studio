@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "lenis/dist/lenis.css";
 
 /*
   E2E Studio brand tokens: the ONE place to change colours, fonts and spacing.
@@ -346,4 +347,78 @@ button,
     transition: none !important;
     animation: none !important;
   }
+}
+
+/* ---------- Smooth scrolling ---------- */
+/* Lenis handles wheel scrolling when the 3D runs. Without it, anchor links still glide (unless motion is reduced). */
+html {
+  scroll-padding-top: 4rem;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html:not(.lenis) {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ---------- Blueprint mode (footer switch sets data-blueprint on <html>) ---------- */
+/* A fine grid between the 3D and the page. */
+main::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.6s ease;
+  background-image:
+    linear-gradient(rgb(2 151 222 / 0.16) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(2 151 222 / 0.16) 1px, transparent 1px),
+    linear-gradient(rgb(2 151 222 / 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgb(2 151 222 / 0.06) 1px, transparent 1px);
+  background-size: 160px 160px, 160px 160px, 32px 32px, 32px 32px;
+  background-position: center;
+}
+[data-blueprint] main::before {
+  opacity: 1;
+}
+/* Cards turn into drawn outlines. */
+[data-blueprint] .card,
+[data-blueprint] .glass,
+[data-blueprint] .float-card {
+  border-style: dashed;
+  border-color: rgb(2 151 222 / 0.6);
+  box-shadow: none;
+  transition: border-color 0.6s ease;
+}
+[data-blueprint] .step-card {
+  --spotlight-card-border: rgb(2 151 222 / 0.6) !important;
+  --spotlight-card-shadow: none !important;
+}
+
+/* The switch itself */
+.bp-switch {
+  position: relative;
+  display: inline-block;
+  height: 1.25rem;
+  width: 2.25rem;
+  border-radius: 999px;
+  border: 1px solid var(--electric);
+  transition: background-color 0.3s ease;
+}
+.bp-switch > span {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  height: calc(1.25rem - 6px);
+  width: calc(1.25rem - 6px);
+  border-radius: 999px;
+  background: var(--cloud-muted, #9aa5ab);
+  transition: translate 0.3s ease, background-color 0.3s ease;
+}
+.bp-switch.is-on {
+  background: rgb(2 151 222 / 0.25);
+}
+.bp-switch.is-on > span {
+  translate: 1rem 0;
+  background: var(--electric);
 }
