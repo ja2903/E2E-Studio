@@ -7,6 +7,7 @@ import ExampleWork from "@/components/sections/ExampleWork";
 import BookCall from "@/components/sections/BookCall";
 import Footer from "@/components/sections/Footer";
 import ClickSpark from "@/components/bits/ClickSpark";
+import Marquee from "@/components/ui/Marquee";
 
 export default function Home() {
   return (
@@ -23,6 +24,7 @@ export default function Home() {
       <ClickSpark sparkColor={["#0297de", "#7fd3ff", "#fc734d"]} sparkCount={9} sparkRadius={26} sparkSize={10} duration={450}>
       <div className="relative z-10">
         <Hero />
+        <Marquee />
         <HowItWorks />
         <Packages />
         <ExampleWork />

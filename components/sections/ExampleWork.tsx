@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Section from "./Section";
+import Parallax from "@/components/ui/Parallax";
 
 const posts = [
   { src: "/work/cake-candle-insta-1.jpg", alt: "Instagram post: What I make, listing cakes, candles and hampers" },
@@ -56,13 +57,18 @@ export default function ExampleWork() {
         </div>
 
         {/* Two pages of the site, stacked for depth */}
+        {/* framer-motion parallax: the two frames drift at different speeds as you scroll */}
         <div className="relative pb-[12%] pr-[8%]">
-          <BrowserFrame src="/work/cake-candle-site-home.png" alt="The Cake and Candle Co. website home page" />
-          <BrowserFrame
-            src="/work/cake-candle-site-order.png"
-            alt="The Cake and Candle Co. website order page"
-            className="absolute bottom-0 right-0 w-[55%] ring-1 ring-electric/40"
-          />
+          <Parallax speed={40}>
+            <BrowserFrame src="/work/cake-candle-site-home.png" alt="The Cake and Candle Co. website home page" />
+          </Parallax>
+          <Parallax speed={-110} className="absolute bottom-0 right-0 w-[55%]">
+            <BrowserFrame
+              src="/work/cake-candle-site-order.png"
+              alt="The Cake and Candle Co. website order page"
+              className="ring-1 ring-electric/40"
+            />
+          </Parallax>
         </div>
       </div>
     </Section>

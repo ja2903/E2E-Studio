@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import ScrollText from "@/components/ui/ScrollText";
 
 type Props = {
   id: string;
@@ -21,10 +22,10 @@ export default function Section({ id, eyebrow, title, intro, children }: Props) 
           {eyebrow}
         </p>
       )}
-      <h2 id={`${id}-title`} className="mt-3 max-w-2xl text-3xl font-semibold leading-tight sm:text-5xl">
+      <h2 id={`${id}-title`} className="text-gradient mt-3 max-w-2xl text-3xl font-semibold leading-tight sm:text-5xl">
         {title}
       </h2>
-      {intro && <p className="mt-4 max-w-xl text-lg text-cloud-muted">{intro}</p>}
+      {intro && <ScrollText text={intro} className="mt-4 max-w-xl text-lg text-cloud-muted" />}
       {children}
     </section>
   );
