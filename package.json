@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@paper-design/shaders-react": "^0.0.82",
+    "framer-motion": "^14.14.0",
     "lenis": "^1.3.27",
     "next": "16.4.6",
     "react": "19.3.0",
