@@ -2,7 +2,9 @@
 
 import { useCallback, useEffect, useRef, useState, type CSSProperties, type KeyboardEvent } from "react";
 import Section from "./Section";
-import { packages, extras, type LayerKind } from "@/lib/packages";
+import Image from "next/image";
+import { packages, extras, comparisons, type LayerKind } from "@/lib/packages";
+import ImageZoom from "@/components/ui/ImageZoom";
 import TiltCard from "@/components/ui/TiltCard";
 import CountUp from "@/components/ui/CountUp";
 
@@ -144,7 +146,17 @@ export default function Packages() {
             aria-label={`${p.step} of 0${packages.length}: ${p.name}`}
           >
             <TiltCard className={`price-card pkg-card ${p.popular ? "pkg-popular" : ""}`}>
-              <div className="flex items-center justify-between gap-3">
+              <div className="pkg-art">
+                <Image
+                  src={p.art.src}
+                  alt={p.art.alt}
+                  width={p.art.width}
+                  height={p.art.height}
+                  sizes="(min-width: 1024px) 420px, (min-width: 768px) 60vw, 85vw"
+                  className="h-full w-full object-contain"
+                />
+              </div>
+              <div className="mt-6 flex items-center justify-between gap-3">
                 <p className="font-heading text-sm tabular-nums text-cloud-muted">{p.step}</p>
                 {p.popular && (
                   <span className="rounded-full bg-electric px-3 py-1 font-heading text-xs font-semibold text-midnight">
@@ -207,12 +219,34 @@ export default function Packages() {
         ))}
       </ul>
 
+      {/* Compare packages */}
+      <div className="mt-12">
+        <h3 className="font-heading text-sm font-semibold uppercase tracking-[0.2em] text-cloud-muted">Compare packages</h3>
+        <ul className="mt-4 grid gap-4 md:grid-cols-2">
+          {comparisons.map((c, n) => (
+            <li key={c.src}>
+              <ImageZoom
+                image={c}
+                label={n === 0 ? "How each package builds on the last" : "Three brand levels"}
+                sizes="(min-width: 1152px) 560px, (min-width: 768px) 48vw, 92vw"
+              />
+            </li>
+          ))}
+        </ul>
+        <p className="mt-3 text-sm text-cloud-muted">Examples use Maple & Co, a made-up business.</p>
+      </div>
+
       {/* Optional extras */}
       <div className="mt-12">
         <h3 className="font-heading text-sm font-semibold uppercase tracking-[0.2em] text-cloud-muted">Optional extras</h3>
         <ul className="mt-4 grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {extras.map((x) => (
             <li key={x.name} className="pkg-extra">
+              {x.image && (
+                <div className="mb-4">
+                  <ImageZoom image={x.image} label={x.name} sizes="(min-width: 1024px) 360px, (min-width: 768px) 46vw, 92vw" />
+                </div>
+              )}
               <p className="font-heading font-semibold">{x.name}</p>
               <p className="mt-1 font-heading text-sm text-electric">{x.price}</p>
               {x.detail && <p className="mt-2 text-sm text-cloud-muted">{x.detail}</p>}
