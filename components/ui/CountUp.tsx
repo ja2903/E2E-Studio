@@ -13,7 +13,7 @@ export default function CountUp({ value }: { value: string }) {
   const ref = useRef<HTMLSpanElement>(null);
   const armed = useRef(false);
   const [text, setText] = useState(value);
-  const parts = value.match(/^(\D*)(\d+)(.*)$/);
+  const parts = value.match(/^(\D*)([\d,]+)(.*)$/); // "£2,000" -> "£", "2,000", ""
 
   const { scrollYProgress } = useScroll({ target: ref, offset: ["start end", "start 0.85"] });
 
@@ -31,11 +31,11 @@ export default function CountUp({ value }: { value: string }) {
     if (!armed.current || p < 1 || !parts) return;
     armed.current = false;
     ref.current?.closest(".price-card")?.setAttribute("data-in", "");
-    const target = Number(parts[2]);
+    const target = Number(parts[2].replace(/,/g, ""));
     animate(0, target, {
       duration: 1.1,
       ease: [0.2, 0.7, 0.2, 1],
-      onUpdate: (v) => setText(`${parts[1]}${Math.round(v)}${parts[3]}`),
+      onUpdate: (v) => setText(`${parts[1]}${Math.round(v).toLocaleString("en-GB")}${parts[3]}`),
     });
   });
 

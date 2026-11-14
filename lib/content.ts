@@ -23,42 +23,4 @@ export const stops = [
   },
 ] as const;
 
-export const packages = [
-  {
-    name: "Starter",
-    price: "£350",
-    unit: "",
-    summary: "Everything you need to look professional and be found.",
-    items: [
-      "Brand kit",
-      "1–3 page website",
-      "Domain name",
-      "Google Business Profile",
-      "Instagram setup",
-    ],
-    featured: false,
-  },
-  {
-    name: "Business",
-    price: "£750",
-    unit: "",
-    summary: "Starter, plus the tools that take orders for you.",
-    items: [
-      "Everything in Starter",
-      "Online booking or ordering",
-      "Business email",
-      "Basic SEO, so local searches find you",
-    ],
-    featured: true,
-  },
-  {
-    name: "Care plan",
-    price: "£40",
-    unit: "/month",
-    summary: "We look after it, so you never have to think about it.",
-    items: ["Hosting", "Upkeep and updates", "Small monthly edits", "A monthly check-in"],
-    featured: false,
-  },
-] as const;
-
 export const needs = ["Brand", "Website", "Bookings", "Care"] as const;
